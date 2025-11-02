@@ -40,7 +40,10 @@ internal class ExecutorFragment : ExecutorAdapter("fragment") {
             return
         }
 
-        sender.inventory.addItem(disc.fragmentItemStack)
+        val stack = disc.fragmentItemStack
+        if (stack != null) {
+            sender.inventory.addItem(stack)
+        }
 
         sender.sendJEXTMessage("disc-command-success", hashMapOf(
             "disc" to disc.displayName

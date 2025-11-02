@@ -82,3 +82,16 @@ nb-configuration.xml
 ## OS X
 ##############################
 .DS_Store
+
+
+
+
+
+
+
+
+
+
+
+.svelte-kit/
+node_modules/

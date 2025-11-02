@@ -15,7 +15,7 @@ interface DiscPlayingMethod {
      * @param volume The volume of the disc.
      * @param pitch The pitch of the disc.
      */
-    fun playLocation(location: Location, namespace: String, volume: Float, pitch: Float)
+    fun playLocation(location: Location, namespace: String, volume: Float, pitch: Float, durationSeconds: Int)
 
     /**
      * Plays the disc for the specified player.

@@ -13,15 +13,20 @@ import kotlin.math.roundToInt
  */
 class NbsDiscPlayingMethod(private val song: Song) : DiscPlayingMethod {
 
-    override fun playLocation(location: Location, namespace: String, volume: Float, pitch: Float) {
+    override fun playLocation(location: Location, namespace: String, volume: Float, pitch: Float, durationSeconds: Int) {
         val songPlayer = PositionSongPlayer(song)
         songPlayer.targetLocation = location
         songPlayer.volume = volume.roundToInt().toByte()
 
-        songPlayer.distance = CONFIG.JUKEBOX_RANGE
+        val range = CONFIG.JUKEBOX_RANGE
+        songPlayer.distance = range
+
+        val rangeSquared = if (range <= 0) Double.POSITIVE_INFINITY else (range * range).toDouble()
 
         location.world!!.players.forEach {
-            songPlayer.addPlayer(it)
+            if (location.distanceSquared(it.location) <= rangeSquared) {
+                songPlayer.addPlayer(it)
+            }
         }
 
         songPlayer.isPlaying = true

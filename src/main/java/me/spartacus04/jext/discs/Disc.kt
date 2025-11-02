@@ -3,12 +3,14 @@ package me.spartacus04.jext.discs
 import io.github.bananapuncher714.nbteditor.NBTEditor
 import me.spartacus04.jext.JextState.CONFIG
 import me.spartacus04.jext.JextState.DISCS
-import me.spartacus04.jext.JextState.SCHEDULER
+import me.spartacus04.jext.JextState.PLUGIN
+import org.bukkit.Bukkit
 import me.spartacus04.jext.JextState.VERSION
 import me.spartacus04.jext.discs.discplaying.DiscPlayingMethod
 import me.spartacus04.jext.discs.sources.file.FileDisc
 import me.spartacus04.jext.utils.Constants.JEXT_DISC_MATERIAL
 import me.spartacus04.jext.utils.Constants.SOUND_MAP
+import me.spartacus04.jext.utils.FoliaRegionScheduler
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.SoundCategory
@@ -113,28 +115,45 @@ open class Disc(
             DISCS.stop(location, namespace)
         }
 
-        discPlayingMethod.playLocation(location, namespace, volume, pitch)
+    discPlayingMethod.playLocation(location, namespace, volume, pitch, duration)
 
-        if(location.block.type != Material.JUKEBOX) return
+        if (location.world == null || location.block.type != Material.JUKEBOX) {
+            return
+        }
 
-        SCHEDULER.runTaskLater({
-            location.world!!.players.forEach {
-                it.stopSound(
-                    SOUND_MAP[JEXT_DISC_MATERIAL]!!.sound,
-                    SoundCategory.RECORDS
-                )
-            }
+        val taskBody = Runnable {
+            try {
+                // Re-check world and block on the server thread
+                val world = location.world ?: return@Runnable
 
-            if(location.block.type == Material.JUKEBOX) {
-                if(VERSION <= "1.21") {
-                    val startTickCount = NBTEditor.getLong(location.block,"RecordStartTick")
-
-                    NBTEditor.set(location.block,startTickCount - (duration - 72) * 20 + 5, "TickCount")
-                } else {
-                    NBTEditor.set(location.block, ((72 - duration) * 20 + 5).toLong(), "ticks_since_song_started")
+                world.players.forEach {
+                    it.stopSound(
+                        SOUND_MAP[JEXT_DISC_MATERIAL]!!.sound,
+                        SoundCategory.RECORDS
+                    )
                 }
+
+                val block = location.block
+                if(block.type == Material.JUKEBOX) {
+                    if(VERSION <= "1.21") {
+                        val startTickCount = NBTEditor.getLong(block,"RecordStartTick")
+                        NBTEditor.set(block,startTickCount - (duration - 72) * 20 + 5, "TickCount")
+                    } else {
+                        NBTEditor.set(block, ((72 - duration) * 20 + 5).toLong(), "ticks_since_song_started")
+                    }
+                }
+            } catch (t: Throwable) {
+                PLUGIN.logger.warning("Failed to update jukebox state safely: ${t.message}")
             }
-        }, 5)
+        }
+
+        if (!FoliaRegionScheduler.run(location, 5L, taskBody)) {
+            try {
+                Bukkit.getScheduler().runTaskLater(PLUGIN, taskBody, 5L)
+            } catch (ex: UnsupportedOperationException) {
+                PLUGIN.logger.warning("Unable to schedule jukebox task on Bukkit scheduler: ${ex.message}")
+            }
+        }
     }
 
     /**
@@ -151,7 +170,6 @@ open class Disc(
 
         discPlayingMethod.playPlayer(player, namespace, volume, pitch)
     }
-
     companion object {
         /**
          * Checks if the itemstack is a custom disc.

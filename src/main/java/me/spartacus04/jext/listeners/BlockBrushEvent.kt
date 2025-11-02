@@ -28,7 +28,6 @@ internal class BlockBrushEvent : JextListener("1.20") {
 
         val lootTableItems = WEIGHTED_LOOT_TABLE_ITEMS[brushableBlock.lootTable!!.key.key]!!
 
-        brushableBlock.lootTable = null
 
         val totalItems = lootTableItems + items.sumOf { it.chance }
         val random = (0 until totalItems).random(Random(brushableBlock.seed))
@@ -40,7 +39,7 @@ internal class BlockBrushEvent : JextListener("1.20") {
                 remainingChance -= item.chance
 
                 if(remainingChance < 0) {
-                    brushableBlock.item = item.stack
+                    brushableBlock.setItem(item.stack)
                     brushableBlock.update(true)
                     break
                 }
@@ -50,7 +49,7 @@ internal class BlockBrushEvent : JextListener("1.20") {
 
     private fun getBrushableBlock(event: PlayerInteractEvent) : BrushableBlock? {
         if(event.action != Action.RIGHT_CLICK_BLOCK) return null
-        if(event.item == null || event.item!!.type != Material.BRUSH) return null
+        if(event.item?.type != Material.BRUSH) return null
 
         val brushableBlock = event.clickedBlock!!.state as? BrushableBlock ?: return null
 

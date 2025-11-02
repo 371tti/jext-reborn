@@ -1,7 +1,9 @@
 package me.spartacus04.jext.discs.discstopping
 
 import com.github.retrooper.packetevents.PacketEvents
+import me.spartacus04.jext.JextState.CONFIG
 import me.spartacus04.jext.JextState.VERSION
+import me.spartacus04.jext.discs.discplaying.JukeboxPlaybackRegistry
 import me.spartacus04.jext.utils.WrapperPlayServerStopSoundCategory
 import org.bukkit.Location
 import org.bukkit.SoundCategory
@@ -33,14 +35,28 @@ class DefaultDiscStoppingMethod : DiscStoppingMethod {
     }
 
     override fun stop(location: Location, namespace: String) {
-        for (player in location.world!!.players) {
-            player.stopSound(namespace, SoundCategory.RECORDS)
+    JukeboxPlaybackRegistry.stopSession(location, namespace, stopAudio = false)
+
+    val world = location.world ?: return
+        val range = CONFIG.JUKEBOX_RANGE
+        val rangeSquared = if (range <= 0) Double.POSITIVE_INFINITY else (range * range).toDouble()
+
+        for (player in world.players) {
+            if (rangeSquared.isInfinite() || player.location.distanceSquared(location) <= rangeSquared) {
+                stop(player, namespace)
+            }
         }
     }
 
     override fun stop(location: Location) {
-        for (player in location.world!!.players) {
-            if (player.location.distance(location) <= 64) {
+    JukeboxPlaybackRegistry.stopSessions(location, stopAudio = false)
+
+    val world = location.world ?: return
+        val configuredRange = CONFIG.JUKEBOX_RANGE
+        val rangeSquared = if (configuredRange <= 0) Double.POSITIVE_INFINITY else (configuredRange * configuredRange).toDouble()
+
+        for (player in world.players) {
+            if (rangeSquared.isInfinite() || player.location.distanceSquared(location) <= rangeSquared) {
                 if(VERSION < "1.19") {
                     stopOldVersions(player)
                 } else {

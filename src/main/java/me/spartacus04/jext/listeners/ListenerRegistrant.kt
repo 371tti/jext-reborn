@@ -10,8 +10,9 @@ internal object ListenerRegistrant {
         { RecordPacketEvent() },
         { ChestOpenEvent() },
         { CreeperDeathEvent() },
-        { DiscUpdateEvent() },
-        { JukeboxClickEvent() },
+    { DiscUpdateEvent() },
+    { JukeboxClickEvent() },
+    { JukeboxPlaybackSessionListener() },
         { PlayerJoinEvent() },
         { ResourceStatusEvent() },
         { PrepareCraftingEvent() },
@@ -20,7 +21,7 @@ internal object ListenerRegistrant {
         { DecoratedPotEvent() },
         { CrafterCraftDiscEvent() },
         { VaultDispenseEvent() },
-        { TrialSpawnerDispenseEvent() }
+    { TrialSpawnerDispenseEvent() }
     ) {
         Bukkit.getConsoleSender().sendMessage(
             LANG.replaceParameters(

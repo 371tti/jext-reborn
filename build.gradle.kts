@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     java
     kotlin("jvm") version "2.1.10"
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("com.gradleup.shadow") version "9.2.2"
 
     id("org.jetbrains.dokka") version "2.0.0"
 
@@ -15,7 +15,6 @@ plugins {
 
 buildscript {
     repositories {
-        mavenCentral()
     }
     dependencies {
         classpath("org.jetbrains.dokka:dokka-base:2.0.0")
@@ -34,30 +33,34 @@ repositories {
     maven("https://repo.xenondevs.xyz/releases/")
     maven("https://jitpack.io")
     maven("https://repo.opencollab.dev/main/")
+    maven("https://repo.papermc.io/repository/maven-public/")
 }
 
 dependencies {
-    compileOnly("org.spigotmc:spigot-api:1.21.7-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:1.21.8-R0.1-SNAPSHOT")
     compileOnly("com.github.retrooper:packetevents-spigot:2.9.1")
-    compileOnly("com.sk89q.worldguard:worldguard-bukkit:7.0.3")
+    compileOnly("com.sk89q.worldguard:worldguard-bukkit:7.0.3") {
+        exclude(group = "org.bukkit", module = "bukkit")
+    }
     compileOnly("org.scala-lang:scala-library:2.13.16")
     compileOnly("com.github.techFortress:GriefPrevention:17.0.0")
     compileOnly("com.github.koca2000:NoteBlockAPI:1.6.3")
     compileOnly("org.geysermc.geyser:api:2.7.0-SNAPSHOT") {
         attributes {
-            attribute(TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, 17)
+            attribute(TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, 21)
         }
     }
 
     implementation("org.bstats:bstats-bukkit:3.1.0")
-    implementation("io.github.bananapuncher714:nbteditor:7.19.9")
+    implementation("io.github.bananapuncher714:nbteditor:7.19.10")
     implementation("xyz.xenondevs.invui:invui:1.46")
     implementation("xyz.xenondevs.invui:invui-kotlin:1.46")
     implementation("com.google.code.gson:gson:2.13.1")
-    implementation("com.github.Anon8281:UniversalScheduler:0.1.6")
 
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
+
+    implementation("com.github.Anon8281:UniversalScheduler:0.1.7")
 }
 
 group = "me.spartacus04.jext"
@@ -65,8 +68,8 @@ group = "me.spartacus04.jext"
 version = System.getenv("jextVersion") ?: "dev"
 
 description = "jukebox-extended-reborn"
-java.targetCompatibility = JavaVersion.VERSION_1_8
-java.sourceCompatibility = JavaVersion.VERSION_1_8
+java.targetCompatibility = JavaVersion.VERSION_21
+java.sourceCompatibility = JavaVersion.VERSION_21
 
 tasks {
     shadowJar {
@@ -98,8 +101,12 @@ tasks {
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
     compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_1_8)
+        jvmTarget.set(JvmTarget.JVM_21)
     }
+}
+
+tasks.withType<JavaCompile> {
+    options.release.set(21)
 }
 
 artifacts.archives(tasks.shadowJar)
