@@ -2,7 +2,6 @@
 Includes the following:
 - [x] web_ui modifications
     - [x] Fixed compilation errors
-- [ ] Support for folia 1.21.8
 
 Below is the original Readme from the fork source.
 
