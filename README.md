@@ -1,3 +1,11 @@
+# Overview of the Fork
+Includes the following:
+- [x] web_ui modifications
+    - [x] Fixed compilation errors
+- [ ] Support for folia 1.21.8
+
+Below is the original Readme from the fork source.
+
 # Jukebox Extended Reborn | Web UI
 
 > The webui allows the user to configure the plugin in the browser with ease
